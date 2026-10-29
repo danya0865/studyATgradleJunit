@@ -1,0 +1,38 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.practice'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+
+// Задача 1: запускает все тесты в проекте
+test {
+    useJUnitPlatform()
+    testLogging {
+        showStandardStreams = true
+        events "passed", "failed", "skipped"
+    }
+    outputs.upToDateWhen { false }   // <-- вот эта строка: тесты запускаются каждый раз
+    finalizedBy 'testRunOver'
+}
+
+// Задача 2: пишет в консоль после прогона тестов
+tasks.register('testRunOver') {
+    doLast {
+        println 'Test run is over'
+    }
+}
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
