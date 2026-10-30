@@ -15,18 +15,46 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-// Задача 1: запускает все тесты в проекте
-test {
-    useJUnitPlatform()
+// Общие настройки для всех задач запуска тестов (test, smokeTest, regressionTest, negativeTest)
+tasks.withType(Test).configureEach {
     testLogging {
         showStandardStreams = true
         events "passed", "failed", "skipped"
+        exceptionFormat "full"          // при падении выводит сообщение ассерта: expected / actual
     }
-    outputs.upToDateWhen { false }   // <-- вот эта строка: тесты запускаются каждый раз
-    finalizedBy 'testRunOver'
+    outputs.upToDateWhen { false }      // тесты выполняются при каждом запуске
+    finalizedBy 'testRunOver'           // после любой задачи с тестами пишется Test run is over
 }
 
-// Задача 2: пишет в консоль после прогона тестов
+// Основная задача: запускает все тесты.
+// Фильтрация по тегу через параметры командной строки:
+//   .\gradlew test -PincludeTag=smoke
+//   .\gradlew test -PexcludeTag=negative
+test {
+    useJUnitPlatform {
+        if (project.hasProperty('includeTag')) {
+            includeTags project.property('includeTag') as String
+        }
+        if (project.hasProperty('excludeTag')) {
+            excludeTags project.property('excludeTag') as String
+        }
+    }
+}
+
+// Отдельные задачи с фильтрацией по тегу: smokeTest, regressionTest, negativeTest
+['smoke', 'regression', 'negative'].each { tagName ->
+    tasks.register("${tagName}Test", Test) {
+        group = 'verification'
+        description = "Запускает только тесты с тегом ${tagName}"
+        testClassesDirs = sourceSets.test.output.classesDirs
+        classpath = sourceSets.test.runtimeClasspath
+        useJUnitPlatform {
+            includeTags tagName
+        }
+    }
+}
+
+// Пишет в консоль после прогона тестов
 tasks.register('testRunOver') {
     doLast {
         println 'Test run is over'
