@@ -42,3 +42,6 @@ bin/
 .DS_Store
 
 .idea/
+
+data/
+oa_at_train_project-1.0-SNAPSHOT.jar
