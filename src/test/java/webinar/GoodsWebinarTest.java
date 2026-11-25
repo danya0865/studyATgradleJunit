@@ -1,6 +1,7 @@
 
 package webinar;
 
+import config.TestConfig;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.Condition.exactText;
@@ -12,8 +13,12 @@ public class GoodsWebinarTest extends BaseWebinarTest {
     @Test
     public void shouldCreateOrderWithThreeItems() {
         // Создаём тестовый товар через API
-        String productName = "Webinar_" + java.util.UUID.randomUUID();
-        long productId = createGood(productName, 50);
+        String productName = TestConfig.getProductName()
+                + "_" + java.util.UUID.randomUUID();
+
+        double productPrice = TestConfig.getProductPrice();
+
+        long productId = createGood(productName, productPrice);
 
         // Открываем главную страницу
         open("/");
@@ -21,7 +26,7 @@ public class GoodsWebinarTest extends BaseWebinarTest {
         // Добавляем товар в корзину три раза
         String addButton = "button[data-action='add-to-cart'][data-id='" + productId + "']";
 
-        $(addButton).click();
+        $(addButton).shouldBe(visible).click();
         $(addButton).click();
         $(addButton).click();
 
@@ -29,7 +34,9 @@ public class GoodsWebinarTest extends BaseWebinarTest {
         $("#open-cart-btn").click();
 
         // Проверяем общую сумму
-        $("#total-price").shouldHave(exactText("150"));
+        $("#total-price").shouldHave(
+                exactText(String.valueOf((int) (productPrice * 3)))
+        );
 
         // Оформляем заказ
         $("#makeOrder").click();
@@ -56,32 +63,41 @@ public class GoodsWebinarTest extends BaseWebinarTest {
         String firstButton = "button[data-action='add-to-cart'][data-id='" + firstId + "']";
         String secondButton = "button[data-action='add-to-cart'][data-id='" + secondId + "']";
 
-        $(firstButton).click();
-        $(secondButton).click();
+        $(firstButton).shouldBe(visible).click();
+        $(secondButton).shouldBe(visible).click();
 
         // Открываем корзину
         $("#open-cart-btn").click();
 
         // Проверяем общую стоимость
-        $("#total-price").shouldHave(exactText("250"));
-    }
+        int expectedTotal = (int) (
+                TestConfig.getProductPrice() +
+                        TestConfig.getProductPrice()
+        );
 
+        $("#total-price").shouldHave(exactText(String.valueOf(expectedTotal)));
+
+        $("#total-price").shouldHave(exactText(String.valueOf(expectedTotal)));
+    }
 
     @Test
     public void shouldAddProductThroughAdminAndShowNotification() {
-        String productName = "Webinar_Admin_" + java.util.UUID.randomUUID();
+        String productName = TestConfig.getProductName()
+                + "_" + java.util.UUID.randomUUID();
+
+        double productPrice = TestConfig.getProductPrice();
 
         // Открываем админку
         open("/admin");
 
         // Авторизуемся
-        $("[name='username']").setValue("admin");
-        $("[name='password']").setValue("secret123");
+        $("[name='username']").setValue(TestConfig.getAdminUsername());
+        $("[name='password']").setValue(TestConfig.getAdminPassword());
         $("button[type='submit']").click();
 
         // Заполняем форму добавления товара
         $("#n-name").setValue(productName);
-        $("#n-price").setValue("200");
+        $("#n-price").setValue(String.valueOf((int) productPrice));
 
         // Добавляем товар
         $("#add-btn").click();
@@ -91,7 +107,6 @@ public class GoodsWebinarTest extends BaseWebinarTest {
                 .findBy(exactText("Товар успешно добавлен!"))
                 .shouldBe(visible);
     }
-
 
     @Test
     public void shouldEditProductThroughAdmin() {
@@ -107,8 +122,8 @@ public class GoodsWebinarTest extends BaseWebinarTest {
 
         // Если авторизация уже активна, форма входа не понадобится
         if ($("[name='username']").exists()) {
-            $("[name='username']").setValue("admin");
-            $("[name='password']").setValue("secret123");
+            $("[name='username']").setValue(TestConfig.getAdminUsername());
+            $("[name='password']").setValue(TestConfig.getAdminPassword());
             $("button[type='submit']").click();
         }
 
@@ -120,9 +135,11 @@ public class GoodsWebinarTest extends BaseWebinarTest {
         $("button[data-action='update'][data-id='" + productId + "']").click();
 
         // Проверяем изменения в таблице
-        $("#nm-" + productId).shouldHave(com.codeborne.selenide.Condition.value(newName));
-        $("#pr-" + productId).shouldHave(com.codeborne.selenide.Condition.value(newPrice));
+        $("#nm-" + productId).shouldHave(
+                com.codeborne.selenide.Condition.value(newName)
+        );
+        $("#pr-" + productId).shouldHave(
+                com.codeborne.selenide.Condition.value(newPrice)
+        );
     }
-
-
 }

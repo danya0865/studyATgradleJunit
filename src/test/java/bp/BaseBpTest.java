@@ -1,6 +1,8 @@
+
 package bp;
 
 import com.codeborne.selenide.Configuration;
+import config.TestConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
 
@@ -11,8 +13,9 @@ public class BaseBpTest {
     @BeforeEach
     public void setUp() {
         Configuration.browser = "chrome";
-        Configuration.baseUrl = "http://localhost:8080";
+        Configuration.baseUrl = TestConfig.getAppUrl();
         Configuration.browserSize = "1920x1080";
+        Configuration.timeout = TestConfig.getTimeoutSeconds() * 1000;
     }
 
     @AfterEach

@@ -1,6 +1,7 @@
 
 package selenium;
 
+import config.TestConfig;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -13,27 +14,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GoodsSeleniumTest extends BaseSeleniumTest {
 
-    private static final String BASE_URL = "http://localhost:8080";
-
     @Test
     public void shouldAddProductThroughAdmin() {
-        String productName = "Selenium_" + UUID.randomUUID();
-        String productPrice = "199";
+        String productName = TestConfig.getProductName() + "_" + UUID.randomUUID();
+        String productPrice = String.valueOf(TestConfig.getProductPrice());
 
         WebDriverWait wait = new WebDriverWait(
-                driver, Duration.ofSeconds(10)
+                driver, Duration.ofSeconds(TestConfig.getTimeoutSeconds())
         );
 
         // Открываем страницу администратора
-        driver.get(BASE_URL + "/admin");
+        driver.get(TestConfig.getAppUrl() + "/admin");
 
         // Авторизуемся
         wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.name("username")
-        )).sendKeys("admin");
+        )).sendKeys(TestConfig.getAdminUsername());
 
         driver.findElement(By.name("password"))
-                .sendKeys("secret123");
+                .sendKeys(TestConfig.getAdminPassword());
 
         driver.findElement(By.cssSelector("button[type='submit']"))
                 .click();
@@ -49,9 +48,8 @@ public class GoodsSeleniumTest extends BaseSeleniumTest {
         driver.findElement(By.id("add-btn"))
                 .click();
 
-
-    // Возвращаемся в магазин
-        driver.get(BASE_URL);
+        // Возвращаемся в магазин
+        driver.get(TestConfig.getAppUrl());
 
         // Проверяем, что товар появился
         boolean productIsDisplayed = wait.until(
@@ -71,16 +69,18 @@ public class GoodsSeleniumTest extends BaseSeleniumTest {
     @Test
     public void shouldAddProductToCart() {
         WebDriverWait wait = new WebDriverWait(
-                driver, Duration.ofSeconds(10)
+                driver, Duration.ofSeconds(TestConfig.getTimeoutSeconds())
         );
 
-        driver.get(BASE_URL);
+        driver.get(TestConfig.getAppUrl());
 
-        // Добавляем Стакан в корзину
+        // Добавляем стартовый товар
+        String productSelector =
+                "button[data-action='add-to-cart'][data-name='"
+                        + TestConfig.getProductName() + "']";
+
         wait.until(ExpectedConditions.elementToBeClickable(
-                By.cssSelector(
-                        "button[data-action='add-to-cart'][data-name='Стакан']"
-                )
+                By.cssSelector(productSelector)
         )).click();
 
         // Открываем корзину
@@ -100,10 +100,10 @@ public class GoodsSeleniumTest extends BaseSeleniumTest {
     @Test
     public void shouldRejectInvalidAdminCredentials() {
         WebDriverWait wait = new WebDriverWait(
-                driver, Duration.ofSeconds(10)
+                driver, Duration.ofSeconds(TestConfig.getTimeoutSeconds())
         );
 
-        driver.get(BASE_URL + "/admin");
+        driver.get(TestConfig.getAppUrl() + "/admin");
 
         wait.until(ExpectedConditions.visibilityOfElementLocated(
                 By.name("username")
@@ -129,16 +129,18 @@ public class GoodsSeleniumTest extends BaseSeleniumTest {
     @Test
     public void shouldKeepCartAfterPageRefresh() {
         WebDriverWait wait = new WebDriverWait(
-                driver, Duration.ofSeconds(10)
+                driver, Duration.ofSeconds(TestConfig.getTimeoutSeconds())
         );
 
-        driver.get(BASE_URL);
+        driver.get(TestConfig.getAppUrl());
 
-        // Добавляем товар
+        // Добавляем стартовый товар
+        String productSelector =
+                "button[data-action='add-to-cart'][data-name='"
+                        + TestConfig.getProductName() + "']";
+
         wait.until(ExpectedConditions.elementToBeClickable(
-                By.cssSelector(
-                        "button[data-action='add-to-cart'][data-name='Стакан']"
-                )
+                By.cssSelector(productSelector)
         )).click();
 
         // Открываем корзину
@@ -169,5 +171,4 @@ public class GoodsSeleniumTest extends BaseSeleniumTest {
                 "Корзина должна сохранять товар после обновления страницы"
         );
     }
-
 }

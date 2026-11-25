@@ -5,6 +5,7 @@ import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
 import io.restassured.specification.RequestSpecification;
+import config.TestConfig;
 
 import java.util.Map;
 import java.util.UUID;
@@ -16,11 +17,10 @@ import static io.restassured.RestAssured.given;
  */
 public final class GoodsApi {
 
-    public static final String BASE_URI = "http://localhost:8080";
+    public static final String BASE_URI = TestConfig.getApiUrl();
 
-    // Учётные данные учебного сервера (HTTP Basic)
-    public static final String USERNAME = "admin";
-    public static final String PASSWORD = "secret123";
+    public static final String USERNAME = TestConfig.getAdminUsername();
+    public static final String PASSWORD = TestConfig.getAdminPassword();
 
     // ID, которого заведомо нет в системе
     public static final long NON_EXISTENT_ID = 999_999_999L;

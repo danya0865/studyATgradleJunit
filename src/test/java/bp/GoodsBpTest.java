@@ -1,5 +1,7 @@
+
 package bp;
 
+import config.TestConfig;
 import org.junit.jupiter.api.Test;
 
 import static com.codeborne.selenide.Condition.visible;
@@ -12,9 +14,11 @@ public class GoodsBpTest extends BaseBpTest {
         // Открываем главную страницу
         open("/");
 
-        // Находим товар "Стакан"
+        // Находим стартовый товар
         var product = $$(".product-card")
-                .findBy(com.codeborne.selenide.Condition.attribute("data-name", "Стакан"));
+                .findBy(com.codeborne.selenide.Condition.attribute(
+                        "data-name", TestConfig.getProductName()
+                ));
 
         // Получаем ID товара
         String productId = product.getAttribute("data-id");
@@ -38,9 +42,11 @@ public class GoodsBpTest extends BaseBpTest {
         // Открываем главную страницу
         open("/");
 
-        // Находим товар "Стакан"
+        // Находим стартовый товар
         var product = $$(".product-card")
-                .findBy(com.codeborne.selenide.Condition.attribute("data-name", "Стакан"));
+                .findBy(com.codeborne.selenide.Condition.attribute(
+                        "data-name", TestConfig.getProductName()
+                ));
 
         // Получаем ID товара
         String productId = product.getAttribute("data-id");

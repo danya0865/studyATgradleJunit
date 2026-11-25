@@ -1,6 +1,7 @@
 
 package selenide;
 
+import config.TestConfig;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -14,15 +15,15 @@ public class GoodsSelenideTest extends BaseSelenideTest {
 
     @Test
     public void shouldAddProductThroughAdmin() {
-        String productName = "Selenide_" + UUID.randomUUID();
-        String productPrice = "250";
+        String productName = TestConfig.getProductName() + "_" + UUID.randomUUID();
+        String productPrice = String.valueOf(TestConfig.getProductPrice());
 
         // Открываем админку
         open("/admin");
 
         // Авторизуемся
-        $("[name='username']").setValue("admin");
-        $("[name='password']").setValue("secret123");
+        $("[name='username']").setValue(TestConfig.getAdminUsername());
+        $("[name='password']").setValue(TestConfig.getAdminPassword());
         $("button[type='submit']").click();
 
         // Добавляем товар
@@ -43,7 +44,9 @@ public class GoodsSelenideTest extends BaseSelenideTest {
     public void shouldAddProductToCart() {
         open("/");
 
-        $("button[data-action='add-to-cart'][data-name='Стакан']").click();
+        // Добавляем стартовый товар
+        $("button[data-action='add-to-cart'][data-name='"
+                + TestConfig.getProductName() + "']").click();
 
         $("#open-cart-btn").click();
 
@@ -66,7 +69,9 @@ public class GoodsSelenideTest extends BaseSelenideTest {
     public void shouldKeepCartAfterPageRefresh() {
         open("/");
 
-        $("button[data-action='add-to-cart'][data-name='Стакан']").click();
+        // Добавляем стартовый товар
+        $("button[data-action='add-to-cart'][data-name='"
+                + TestConfig.getProductName() + "']").click();
 
         $("#open-cart-btn").click();
         $("#cart-items .cart-item").shouldBe(visible);
@@ -81,12 +86,19 @@ public class GoodsSelenideTest extends BaseSelenideTest {
     public void shouldShowAlertWhenOrderTotalExceeds300() {
         open("/");
 
-        $("button[data-action='add-to-cart'][data-name='Стакан']").click();
-        $("button[data-action='add-to-cart'][data-name='Стакан']").click();
+        String productSelector = "button[data-action='add-to-cart'][data-name='"
+                + TestConfig.getProductName() + "']";
+
+        $(productSelector).click();
+        $(productSelector).click();
 
         $("#open-cart-btn").click();
 
-        $("#total-price").shouldHave(exactText("340"));
+        String expectedTotal = String.valueOf(
+                (int) (TestConfig.getProductPrice() * 2)
+        );
+
+        $("#total-price").shouldHave(exactText(expectedTotal));
 
         $("#makeOrder").click();
 
