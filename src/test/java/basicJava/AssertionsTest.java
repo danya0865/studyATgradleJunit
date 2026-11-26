@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AssertionsTest {
 
@@ -54,8 +55,11 @@ public class AssertionsTest {
     @Tag("negative")
     void buggySumToNShouldFail() {
         int n = 5;
-        int expected = 15;                 // 1+2+3+4+5
-        int actual = buggySumToN(n);       // вернёт 10
-        assertEquals(expected, actual, "buggySumToN(" + n + ")");
+        int expected = 15;
+
+        assertThrows(AssertionError.class, () -> {
+            int actual = buggySumToN(n);
+            assertEquals(expected, actual, "buggySumToN(" + n + ")");
+        });
     }
 }

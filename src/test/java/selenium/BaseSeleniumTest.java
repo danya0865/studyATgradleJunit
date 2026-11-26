@@ -23,9 +23,7 @@ public class BaseSeleniumTest {
 
         driver = new ChromeDriver(options);
 
-        driver.manage().timeouts().implicitlyWait(
-                Duration.ofSeconds(TestConfig.getTimeoutSeconds())
-        );
+        driver.manage().timeouts().implicitlyWait(Duration.ZERO);
     }
 
     @AfterEach

@@ -1,5 +1,6 @@
 plugins {
     id 'java'
+    id 'io.qameta.allure' version '2.12.0'
 }
 
 group = 'com.practice'
@@ -10,6 +11,11 @@ repositories {
 }
 
 dependencies {
+    // Allure
+    testImplementation 'io.qameta.allure:allure-junit5:2.29.1'
+    testImplementation 'io.qameta.allure:allure-selenide:2.29.1'
+    testImplementation 'io.qameta.allure:allure-rest-assured:2.29.1'
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
@@ -87,4 +93,27 @@ tasks.register('testRunOver') {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+
+allure {
+    version = '2.29.0'
+
+    adapter {
+        allureJavaVersion = '2.29.1'
+        aspectjVersion = '1.9.22.1'
+
+        // Автоматическая настройка Allure
+        autoconfigure = true
+        autoconfigureListeners = true
+        aspectjWeaver = true
+
+        frameworks {
+            junit5 {
+                adapterVersion = '2.29.1'
+                enabled = true
+                autoconfigureListeners = true
+            }
+        }
+    }
 }

@@ -1,9 +1,10 @@
+
 package pages;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import io.qameta.allure.Step;
 
-import static assertions.PageAssert.assertVisible;
 import static com.codeborne.selenide.Selenide.*;
 
 public class AdminPage {
@@ -17,21 +18,25 @@ public class AdminPage {
 
     private final SelenideElement returnToStoreLink = $("a[href='/']");
 
+    @Step("Ввести название нового товара: {name}")
     public AdminPage enterNewProductName(String name) {
         newProductNameField.setValue(name);
         return this;
     }
 
+    @Step("Ввести цену нового товара: {price}")
     public AdminPage enterNewProductPrice(String price) {
         newProductPriceField.setValue(price);
         return this;
     }
 
+    @Step("Нажать кнопку добавления товара")
     public AdminPage addProduct() {
         addProductButton.click();
         return this;
     }
 
+    @Step("Добавить товар: {name}, цена {price}")
     public AdminPage addProduct(String name, String price) {
         enterNewProductName(name);
         enterNewProductPrice(price);
@@ -39,6 +44,7 @@ public class AdminPage {
         return this;
     }
 
+    @Step("Изменить товар с ID {productId}: новое название {newName}, новая цена {newPrice}")
     public AdminPage editProduct(String productId, String newName, String newPrice) {
         $("#nm-" + productId).setValue(newName);
         $("#pr-" + productId).setValue(newPrice);
@@ -47,15 +53,19 @@ public class AdminPage {
         return this;
     }
 
+    @Step("Изменить товар {oldName}: новое название {newName}, новая цена {newPrice}")
     public AdminPage editProductByName(String oldName, String newName, String newPrice) {
         String productId = getProductIdByName(oldName);
         return editProduct(productId, newName, newPrice);
     }
 
+    @Step("Вернуться в магазин")
     public AdminPage returnToStore() {
         returnToStoreLink.click();
         return this;
     }
+
+    // Getters for PageAssert: return element references without assertions
 
     public SelenideElement getNewProductNameField() {
         return newProductNameField;
@@ -78,6 +88,7 @@ public class AdminPage {
                 com.codeborne.selenide.Condition.exactText(text)
         );
     }
+
     public SelenideElement getProductNameField(String productId) {
         return $("#nm-" + productId);
     }
@@ -85,6 +96,8 @@ public class AdminPage {
     public SelenideElement getProductPriceField(String productId) {
         return $("#pr-" + productId);
     }
+
+    @Step("Получить ID товара по названию: {productName}")
     public String getProductIdByName(String productName) {
         SelenideElement nameField = $$("tbody input[id^='nm-']")
                 .findBy(com.codeborne.selenide.Condition.value(productName))
@@ -93,11 +106,5 @@ public class AdminPage {
         String fieldId = nameField.getAttribute("id");
 
         return fieldId.replace("nm-", "");
-    }
-    // Проверка формы добавления товара в админке
-    public static void assertAdminPageLoaded(AdminPage page) {
-        assertVisible(page.getNewProductNameField());
-        assertVisible(page.getNewProductPriceField());
-        assertVisible(page.getAddProductButton());
     }
 }

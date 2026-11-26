@@ -1,12 +1,11 @@
+
 package api;
 
+import assertions.ApiAssert;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.Matchers.equalTo;
-
-/** GET /goods/{id}: коды 200 и 404. */
 @Tag("api")
 public class GoodsGetByIdTest extends BaseApiTest {
 
@@ -15,26 +14,28 @@ public class GoodsGetByIdTest extends BaseApiTest {
         String name = GoodsApi.uniqueName();
         long id = createGood(name, 25.5);
 
-        GoodsApi.get(id).then()
-                .statusCode(200)
-                .body("name", equalTo(name));
+        var response = GoodsApi.get(id);
+
+        ApiAssert.assertStatusCode(response, 200);
+        ApiAssert.assertBodyFieldEquals(response, "name", name);
     }
 
     // 404: запрашиваем товар, который уже удалён
     @Test
     void getDeletedGood_returns404() {
         long id = createGood(GoodsApi.uniqueName(), 25.5);
-        GoodsApi.delete(id).then().statusCode(200);
 
-        GoodsApi.get(id).then()
-                .statusCode(404);
+        ApiAssert.assertStatusCode(GoodsApi.delete(id), 200);
+        ApiAssert.assertStatusCode(GoodsApi.get(id), 404);
     }
 
-    // Найденный баг API: для ID, которого никогда не было, сервер отвечает 500 вместо 404
-    @Disabled("БАГ API: GET /goods/{id} для несуществующего ID (например, 999999999) возвращает 500 вместо 404")
+    // Найденный баг API: для несуществующего ID сервер отвечает 500 вместо 404
+    @Disabled("БАГ API: GET /goods/{id} для несуществующего ID возвращает 500 вместо 404")
     @Test
     void getNonexistentGood_returns404() {
-        GoodsApi.get(GoodsApi.NON_EXISTENT_ID).then()
-                .statusCode(404);
+        ApiAssert.assertStatusCode(
+                GoodsApi.get(GoodsApi.NON_EXISTENT_ID),
+                404
+        );
     }
 }

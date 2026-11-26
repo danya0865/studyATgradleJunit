@@ -1,18 +1,19 @@
+
 package api;
 
+import assertions.ApiAssert;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import static org.hamcrest.Matchers.is;
-
-/** GET /goods/list: код 200 и пагинация. */
 @Tag("api")
 public class GoodsListTest extends BaseApiTest {
 
     @Test
     void listGoods_returns200() {
-        GoodsApi.list().then()
-                .statusCode(200);
+        Response response = GoodsApi.list();
+
+        ApiAssert.assertStatusCode(response, 200);
     }
 
     @Test
@@ -21,8 +22,9 @@ public class GoodsListTest extends BaseApiTest {
         createGood(GoodsApi.uniqueName(), 11.5);
         createGood(GoodsApi.uniqueName(), 12.5);
 
-        GoodsApi.list(0, 2).then()
-                .statusCode(200)
-                .body("goods.size()", is(2));
+        Response response = GoodsApi.list(0, 2);
+
+        ApiAssert.assertStatusCode(response, 200);
+        ApiAssert.assertListSize(response, "goods", 2);
     }
 }

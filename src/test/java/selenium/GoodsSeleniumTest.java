@@ -2,6 +2,7 @@
 package selenium;
 
 import config.TestConfig;
+import io.qameta.allure.Step;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -14,20 +15,25 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class GoodsSeleniumTest extends BaseSeleniumTest {
 
-    @Test
-    public void shouldAddProductThroughAdmin() {
-        String productName = TestConfig.getProductName() + "_" + UUID.randomUUID();
-        String productPrice = String.valueOf(TestConfig.getProductPrice());
-
-        WebDriverWait wait = new WebDriverWait(
+    private WebDriverWait getWait() {
+        return new WebDriverWait(
                 driver, Duration.ofSeconds(TestConfig.getTimeoutSeconds())
         );
+    }
 
-        // Открываем страницу администратора
+    @Step("Открыть страницу магазина")
+    private void openStore() {
+        driver.get(TestConfig.getAppUrl());
+    }
+
+    @Step("Открыть страницу администратора")
+    private void openAdmin() {
         driver.get(TestConfig.getAppUrl() + "/admin");
+    }
 
-        // Авторизуемся
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
+    @Step("Авторизоваться администратором")
+    private void loginAsAdmin() {
+        getWait().until(ExpectedConditions.visibilityOfElementLocated(
                 By.name("username")
         )).sendKeys(TestConfig.getAdminUsername());
 
@@ -36,23 +42,26 @@ public class GoodsSeleniumTest extends BaseSeleniumTest {
 
         driver.findElement(By.cssSelector("button[type='submit']"))
                 .click();
+    }
 
-        // Заполняем форму добавления товара
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
+    @Step("Заполнить форму товара: {productName}, цена {productPrice}")
+    private void fillProductForm(String productName, String productPrice) {
+        getWait().until(ExpectedConditions.visibilityOfElementLocated(
                 By.id("n-name")
         )).sendKeys(productName);
 
         driver.findElement(By.id("n-price"))
                 .sendKeys(productPrice);
+    }
 
-        driver.findElement(By.id("add-btn"))
-                .click();
+    @Step("Добавить товар")
+    private void submitProduct() {
+        driver.findElement(By.id("add-btn")).click();
+    }
 
-        // Возвращаемся в магазин
-        driver.get(TestConfig.getAppUrl());
-
-        // Проверяем, что товар появился
-        boolean productIsDisplayed = wait.until(
+    @Step("Проверить отображение товара {productName} в магазине")
+    private void assertProductDisplayed(String productName) {
+        boolean productIsDisplayed = getWait().until(
                 ExpectedConditions.visibilityOfElementLocated(
                         By.xpath(
                                 "//div[contains(@class,'product-card')]" +
@@ -62,105 +71,78 @@ public class GoodsSeleniumTest extends BaseSeleniumTest {
                 )
         ).isDisplayed();
 
-        assertTrue(productIsDisplayed,
-                "Добавленный товар должен отображаться в магазине");
+        assertTrue(
+                productIsDisplayed,
+                "Добавленный товар должен отображаться в магазине"
+        );
     }
 
-    @Test
-    public void shouldAddProductToCart() {
-        WebDriverWait wait = new WebDriverWait(
-                driver, Duration.ofSeconds(TestConfig.getTimeoutSeconds())
-        );
-
-        driver.get(TestConfig.getAppUrl());
-
-        // Добавляем стартовый товар
+    @Step("Добавить стартовый товар в корзину")
+    private void addDefaultProductToCart() {
         String productSelector =
                 "button[data-action='add-to-cart'][data-name='"
                         + TestConfig.getProductName() + "']";
 
-        wait.until(ExpectedConditions.elementToBeClickable(
+        getWait().until(ExpectedConditions.elementToBeClickable(
                 By.cssSelector(productSelector)
         )).click();
+    }
 
-        // Открываем корзину
+    @Step("Открыть корзину")
+    private void openCart() {
         driver.findElement(By.id("open-cart-btn")).click();
+    }
 
-        // Проверяем наличие товара в корзине
-        boolean productIsDisplayed = wait.until(
+    @Step("Проверить наличие товара в корзине")
+    private void assertCartContainsProduct() {
+        boolean productIsDisplayed = getWait().until(
                 ExpectedConditions.visibilityOfElementLocated(
                         By.cssSelector("#cart-items .cart-item")
                 )
         ).isDisplayed();
 
-        assertTrue(productIsDisplayed,
-                "Товар должен отображаться в корзине");
+        assertTrue(
+                productIsDisplayed,
+                "Товар должен отображаться в корзине"
+        );
     }
 
-    @Test
-    public void shouldRejectInvalidAdminCredentials() {
-        WebDriverWait wait = new WebDriverWait(
-                driver, Duration.ofSeconds(TestConfig.getTimeoutSeconds())
-        );
-
-        driver.get(TestConfig.getAppUrl() + "/admin");
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
+    @Step("Ввести неверные учётные данные администратора")
+    private void loginWithInvalidCredentials() {
+        getWait().until(ExpectedConditions.visibilityOfElementLocated(
                 By.name("username")
         )).sendKeys("wrong_user");
 
-        driver.findElement(By.name("password"))
-                .sendKeys("wrong_password");
+        getWait().until(ExpectedConditions.visibilityOfElementLocated(
+                By.name("password")
+        )).sendKeys("wrong_password");
 
-        driver.findElement(By.cssSelector("button[type='submit']"))
-                .click();
-
-        // Проверяем, что вход не выполнен
-        boolean loginFormIsDisplayed = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                        By.name("username")
-                )
-        ).isDisplayed();
-
-        assertTrue(loginFormIsDisplayed,
-                "При неверных данных пользователь не должен войти в админку");
+        getWait().until(ExpectedConditions.elementToBeClickable(
+                By.cssSelector("button[type='submit']")
+        )).click();
     }
 
-    @Test
-    public void shouldKeepCartAfterPageRefresh() {
-        WebDriverWait wait = new WebDriverWait(
-                driver, Duration.ofSeconds(TestConfig.getTimeoutSeconds())
+    @Step("Проверить, что авторизация не выполнена")
+    private void assertLoginFormDisplayed() {
+        // Spring Security после неудачного входа перенаправляет на /login?error
+        boolean loginFailed = getWait().until(
+                ExpectedConditions.urlContains("error")
         );
 
-        driver.get(TestConfig.getAppUrl());
+        assertTrue(
+                loginFailed,
+                "При неверных данных пользователь не должен войти в админку"
+        );
+    }
 
-        // Добавляем стартовый товар
-        String productSelector =
-                "button[data-action='add-to-cart'][data-name='"
-                        + TestConfig.getProductName() + "']";
-
-        wait.until(ExpectedConditions.elementToBeClickable(
-                By.cssSelector(productSelector)
-        )).click();
-
-        // Открываем корзину
-        driver.findElement(By.id("open-cart-btn")).click();
-
-        // Проверяем, что товар добавлен
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.cssSelector("#cart-items .cart-item")
-        ));
-
-        // Обновляем страницу
+    @Step("Обновить страницу")
+    private void refreshPage() {
         driver.navigate().refresh();
+    }
 
-        // Снова открываем корзину
-        wait.until(ExpectedConditions.elementToBeClickable(
-                By.id("open-cart-btn")
-        )).click();
-
-        // Проверяем, что товар сохранился
-        wait.until(ExpectedConditions.numberOfElementsToBe(
+    @Step("Проверить, что в корзине ровно один товар")
+    private void assertOneProductInCart() {
+        getWait().until(ExpectedConditions.numberOfElementsToBe(
                 By.cssSelector("#cart-items .cart-item"), 1
         ));
 
@@ -170,5 +152,47 @@ public class GoodsSeleniumTest extends BaseSeleniumTest {
                 ).isDisplayed(),
                 "Корзина должна сохранять товар после обновления страницы"
         );
+    }
+
+    @Test
+    public void shouldAddProductThroughAdmin() {
+        String productName = TestConfig.getProductName()
+                + "_" + UUID.randomUUID();
+        String productPrice = String.valueOf(TestConfig.getProductPrice());
+
+        openAdmin();
+        loginAsAdmin();
+        fillProductForm(productName, productPrice);
+        submitProduct();
+
+        openStore();
+        assertProductDisplayed(productName);
+    }
+
+    @Test
+    public void shouldAddProductToCart() {
+        openStore();
+        addDefaultProductToCart();
+        openCart();
+        assertCartContainsProduct();
+    }
+
+    @Test
+    public void shouldRejectInvalidAdminCredentials() {
+        openAdmin();
+        loginWithInvalidCredentials();
+        assertLoginFormDisplayed();
+    }
+
+    @Test
+    public void shouldKeepCartAfterPageRefresh() {
+        openStore();
+        addDefaultProductToCart();
+        openCart();
+        assertCartContainsProduct();
+
+        refreshPage();
+        openCart();
+        assertOneProductInCart();
     }
 }

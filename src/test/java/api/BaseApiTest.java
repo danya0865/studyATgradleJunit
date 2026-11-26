@@ -1,17 +1,18 @@
+
 package api;
 
+import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-
+import assertions.ApiAssert;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Базовый класс: запоминает созданные товары и удаляет их после каждого теста,
- * чтобы тесты не влияли друг на друга (например, тесты пустого списка).
+ * Базовый класс: запоминает созданные товары и удаляет их после каждого теста.
  */
 public abstract class BaseApiTest {
 
@@ -19,10 +20,10 @@ public abstract class BaseApiTest {
 
     @BeforeAll
     static void enableLogging() {
-        // при падении проверки REST Assured печатает запрос и ответ
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     }
 
+    @Step("Добавить товар и отслеживать его ID")
     protected Response addTracked(Map<String, Object> body) {
         Response response = GoodsApi.addRaw(body);
         if (response.statusCode() == 200) {
@@ -31,17 +32,19 @@ public abstract class BaseApiTest {
         return response;
     }
 
+    @Step("Добавить товар {name} с ценой {price}")
     protected Response addTracked(String name, double price) {
         return addTracked(Map.of("name", name, "price", price));
     }
 
-    /** Создаёт товар, проверяет код 200 и возвращает его ID. */
+    @Step("Создать товар {name} с ценой {price}")
     protected long createGood(String name, double price) {
         Response response = addTracked(name, price);
-        response.then().statusCode(200);
+        ApiAssert.assertStatusCode(response, 200);
         return GoodsApi.extractId(response);
     }
 
+    @Step("Удалить созданные в тесте товары")
     @AfterEach
     void deleteCreatedGoods() {
         for (Long id : createdIds) {

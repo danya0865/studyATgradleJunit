@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 import pages.AdminLoginPage;
 import pages.AdminPage;
 import pages.MainPage;
+import io.qameta.allure.Step;
 import selenide.BaseSelenideTest;
 
 import java.util.UUID;
@@ -17,6 +18,7 @@ public class PageObjectTest extends BaseSelenideTest {
     private final AdminLoginPage adminLoginPage = new AdminLoginPage();
 
     // Авторизация администратора
+    @Step("Авторизоваться под администратором")
     private AdminPage loginAsAdmin() {
         adminLoginPage.openPage();
 

@@ -3,6 +3,7 @@ package pages;
 
 import com.codeborne.selenide.ElementsCollection;
 import com.codeborne.selenide.SelenideElement;
+import io.qameta.allure.Step;
 
 import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Condition.visible;
@@ -30,36 +31,36 @@ public class MainPage {
     private final ElementsCollection notifications =
             $$("#toast-container .toast");
 
-    // Открыть главную страницу
+    @Step("Открыть главную страницу")
     public MainPage openPage() {
         open("/");
         return this;
     }
 
-    // Получить карточку товара по ID
+    @Step("Найти карточку товара с ID {productId}")
     public SelenideElement getProductCard(long productId) {
         return $("#card-" + productId);
     }
 
-    // Получить карточку товара по названию
+    @Step("Найти карточку товара {productName}")
     public SelenideElement getProductCard(String productName) {
         return productCards.findBy(text(productName));
     }
 
-    // Установить количество товара
+    @Step("Установить количество товара с ID {productId}: {quantity}")
     public MainPage setProductQuantity(long productId, int quantity) {
         $("#q-" + productId).setValue(String.valueOf(quantity));
         return this;
     }
 
-    // Добавить товар в корзину по ID
+    @Step("Добавить товар с ID {productId} в корзину")
     public MainPage addProductToCart(long productId) {
-        $("button[data-action='add-to-cart'][data-id='"
-                + productId + "']").click();
+        $("button[data-action='add-to-cart'][data-id='" + productId + "']")
+                .click();
         return this;
     }
 
-    // Добавить товар в корзину по названию
+    @Step("Добавить товар {productName} в корзину")
     public MainPage addProductToCartByName(String productName) {
         SelenideElement productCard = getProductCard(productName)
                 .shouldBe(visible);
@@ -71,54 +72,54 @@ public class MainPage {
         return this;
     }
 
-    // Открыть корзину
+    @Step("Открыть корзину")
     public MainPage openCart() {
         openCartButton.click();
         return this;
     }
 
-    // Изменить количество товара в корзине
+    @Step("Изменить количество товара в корзине: индекс {index}, шаг {step}")
     public MainPage changeCartQuantity(int index, int step) {
         $("[data-action='cart-qty'][data-index='" + index
                 + "'][data-step='" + step + "']").click();
         return this;
     }
 
-    // Удалить товар из корзины
+    @Step("Удалить товар из корзины с индексом {index}")
     public MainPage removeProductFromCart(int index) {
         $("[data-action='remove'][data-index='" + index + "']").click();
         return this;
     }
 
-    // Оформить заказ
+    @Step("Оформить заказ")
     public MainPage makeOrder() {
         makeOrderButton.click();
         return this;
     }
 
-    // Получить текст общей суммы
+    @Step("Получить общую сумму корзины")
     public String getTotalPrice() {
         return totalPrice.getText();
     }
 
-    // Получить количество товаров в корзине
+    @Step("Получить количество товаров в корзине")
     public String getCartCount() {
         return cartCount.getText();
     }
 
-    // Получить цену товара по названию
+    @Step("Получить цену товара {productName}")
     public String getProductPriceByName(String productName) {
         return getProductCard(productName).getAttribute("data-price");
     }
 
-    // Получить уведомление по тексту
+    @Step("Найти уведомление: {notificationText}")
     public SelenideElement getNotification(String notificationText) {
         return notifications.findBy(
                 com.codeborne.selenide.Condition.exactText(notificationText)
         );
     }
 
-    // Получить текст заголовка
+    @Step("Получить заголовок главной страницы")
     public String getMainTitle() {
         return mainTitle.getText();
     }

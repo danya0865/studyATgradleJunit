@@ -2,6 +2,7 @@
 package selenide;
 
 import config.TestConfig;
+import io.qameta.allure.Step;
 import org.junit.jupiter.api.Test;
 
 import java.util.UUID;
@@ -13,99 +14,147 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class GoodsSelenideTest extends BaseSelenideTest {
 
-    @Test
-    public void shouldAddProductThroughAdmin() {
-        String productName = TestConfig.getProductName() + "_" + UUID.randomUUID();
-        String productPrice = String.valueOf(TestConfig.getProductPrice());
+    @Step("Открыть магазин")
+    private void openStore() {
+        open("/");
+    }
 
-        // Открываем админку
+    @Step("Открыть админку")
+    private void openAdmin() {
         open("/admin");
+    }
 
-        // Авторизуемся
+    @Step("Авторизоваться администратором")
+    private void loginAsAdmin() {
         $("[name='username']").setValue(TestConfig.getAdminUsername());
         $("[name='password']").setValue(TestConfig.getAdminPassword());
         $("button[type='submit']").click();
+    }
 
-        // Добавляем товар
+    @Step("Добавить товар {productName} с ценой {productPrice}")
+    private void addProduct(String productName, String productPrice) {
         $("#n-name").setValue(productName);
         $("#n-price").setValue(productPrice);
         $("#add-btn").click();
+    }
 
-        // Переходим в магазин
-        open("/");
-
-        // Проверяем, что товар появился
+    @Step("Проверить отображение товара {productName}")
+    private void assertProductVisible(String productName) {
         $$(".product-card h4")
                 .findBy(exactText(productName))
                 .shouldBe(visible);
     }
 
-    @Test
-    public void shouldAddProductToCart() {
-        open("/");
-
-        // Добавляем стартовый товар
+    @Step("Добавить стартовый товар в корзину")
+    private void addDefaultProductToCart() {
         $("button[data-action='add-to-cart'][data-name='"
                 + TestConfig.getProductName() + "']").click();
+    }
 
+    @Step("Открыть корзину")
+    private void openCart() {
         $("#open-cart-btn").click();
+    }
 
+    @Step("Проверить наличие товара в корзине")
+    private void assertCartContainsProduct() {
         $("#cart-items .cart-item").shouldBe(visible);
     }
 
-    @Test
-    public void shouldRejectInvalidAdminCredentials() {
-        open("/admin");
-
+    @Step("Ввести неверные учётные данные")
+    private void enterInvalidCredentials() {
         $("[name='username']").setValue("wrong_user");
         $("[name='password']").setValue("wrong_password");
-
         $("button[type='submit']").click();
+    }
 
+    @Step("Проверить, что форма авторизации осталась открытой")
+    private void assertLoginFormVisible() {
         $("[name='username']").shouldBe(visible);
     }
 
-    @Test
-    public void shouldKeepCartAfterPageRefresh() {
-        open("/");
-
-        // Добавляем стартовый товар
-        $("button[data-action='add-to-cart'][data-name='"
-                + TestConfig.getProductName() + "']").click();
-
-        $("#open-cart-btn").click();
-        $("#cart-items .cart-item").shouldBe(visible);
-
+    @Step("Обновить страницу")
+    private void refreshPage() {
         refresh();
-
-        $("#open-cart-btn").click();
-        $("#cart-items .cart-item").shouldBe(visible);
     }
 
-    @Test
-    public void shouldShowAlertWhenOrderTotalExceeds300() {
-        open("/");
-
-        String productSelector = "button[data-action='add-to-cart'][data-name='"
-                + TestConfig.getProductName() + "']";
-
-        $(productSelector).click();
-        $(productSelector).click();
-
-        $("#open-cart-btn").click();
-
-        String expectedTotal = String.valueOf(
-                (int) (TestConfig.getProductPrice() * 2)
-        );
-
+    @Step("Проверить итоговую стоимость {expectedTotal}")
+    private void assertTotalPrice(String expectedTotal) {
         $("#total-price").shouldHave(exactText(expectedTotal));
+    }
 
+    @Step("Оформить заказ")
+    private void makeOrder() {
         $("#makeOrder").click();
+    }
 
+    @Step("Проверить предупреждение о превышении суммы заказа")
+    private void assertOrderAlertNotBlank() {
         String alertText = switchTo().alert().getText();
 
         assertThat(alertText).isNotBlank();
 
         switchTo().alert().accept();
+    }
+
+    @Test
+    public void shouldAddProductThroughAdmin() {
+        String productName = TestConfig.getProductName()
+                + "_" + UUID.randomUUID();
+        String productPrice = String.valueOf(TestConfig.getProductPrice());
+
+        openAdmin();
+        loginAsAdmin();
+        addProduct(productName, productPrice);
+
+        openStore();
+        assertProductVisible(productName);
+    }
+
+    @Test
+    public void shouldAddProductToCart() {
+        openStore();
+        addDefaultProductToCart();
+        openCart();
+        assertCartContainsProduct();
+    }
+
+    @Test
+    public void shouldRejectInvalidAdminCredentials() {
+        openAdmin();
+        enterInvalidCredentials();
+        assertLoginFormVisible();
+    }
+
+    @Test
+    public void shouldKeepCartAfterPageRefresh() {
+        openStore();
+        addDefaultProductToCart();
+        openCart();
+        assertCartContainsProduct();
+
+        refreshPage();
+
+        openCart();
+        assertCartContainsProduct();
+    }
+
+    @Test
+    public void shouldShowAlertWhenOrderTotalExceeds300() {
+        openStore();
+
+        addDefaultProductToCart();
+        addDefaultProductToCart();
+
+        openCart();
+
+        String expectedTotal = String.valueOf(
+                (int) (TestConfig.getProductPrice() * 2)
+        );
+
+        assertTotalPrice(expectedTotal);
+
+        makeOrder();
+        assertOrderAlertNotBlank();
     }
 }
