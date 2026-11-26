@@ -1,119 +1,20 @@
+
 plugins {
-    id 'java'
-    id 'io.qameta.allure' version '2.12.0'
+    id 'base'
+    id 'io.qameta.allure' version '2.12.0' apply false
 }
 
-group = 'com.practice'
-version = '1.0-SNAPSHOT'
+allprojects {
+    group = 'com.practice'
+    version = '1.0-SNAPSHOT'
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    // Allure
-    testImplementation 'io.qameta.allure:allure-junit5:2.29.1'
-    testImplementation 'io.qameta.allure:allure-selenide:2.29.1'
-    testImplementation 'io.qameta.allure:allure-rest-assured:2.29.1'
-
-    testImplementation platform('org.junit:junit-bom:5.10.0')
-    testImplementation 'org.junit.jupiter:junit-jupiter'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-
-    // API-тесты
-    testImplementation 'io.rest-assured:rest-assured:5.4.0'
-    testImplementation 'org.assertj:assertj-core:3.25.3'
-    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
-
-    // Selenium
-    testImplementation 'org.seleniumhq.selenium:selenium-java:4.27.0'
-
-    // Selenide
-    testImplementation 'com.codeborne:selenide:7.7.3'
-}
-
-// Общие настройки для всех задач запуска тестов
-tasks.withType(Test).configureEach {
-    testLogging {
-        showStandardStreams = true
-        events "passed", "failed", "skipped"
-        exceptionFormat "full"          // при падении выводит сообщение ассерта: expected / actual
-    }
-    outputs.upToDateWhen { false }      // тесты выполняются при каждом запуске
-    finalizedBy 'testRunOver'           // после любой задачи с тестами пишется Test run is over
-}
-
-// Основная задача: запускает все тесты, КРОМЕ API-тестов
-// (API-тестам нужен запущенный учебный сервер, их запускает задача apiTest).
-// Фильтрация по тегу через параметры:
-//   .\gradlew test -PincludeTag=smoke
-//   .\gradlew test -PexcludeTag=negative
-test {
-    useJUnitPlatform {
-        excludeTags 'api'
-        if (project.hasProperty('includeTag')) {
-            includeTags project.property('includeTag') as String
-        }
-        if (project.hasProperty('excludeTag')) {
-            excludeTags project.property('excludeTag') as String
-        }
+    repositories {
+        mavenCentral()
     }
 }
 
-// Задачи с фильтрацией по тегу: smokeTest, regressionTest, negativeTest
-['smoke', 'regression', 'negative'].each { tagName ->
-    tasks.register("${tagName}Test", Test) {
-        group = 'verification'
-        description = "Запускает только тесты с тегом ${tagName}"
-        testClassesDirs = sourceSets.test.output.classesDirs
-        classpath = sourceSets.test.runtimeClasspath
-        useJUnitPlatform {
-            includeTags tagName
-        }
-    }
-}
-
-// Запускает ТОЛЬКО API-автотесты (нужен запущенный сервер на localhost:8080)
-tasks.register('apiTest', Test) {
-    group = 'verification'
-    description = 'Запускает только API-автотесты (тег api)'
-    testClassesDirs = sourceSets.test.output.classesDirs
-    classpath = sourceSets.test.runtimeClasspath
-    useJUnitPlatform {
-        includeTags 'api'
-    }
-}
-
-// Пишет в консоль после прогона тестов
-tasks.register('testRunOver') {
-    doLast {
-        println 'Test run is over'
-    }
-}
-
-tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-}
-
-
-allure {
-    version = '2.29.0'
-
-    adapter {
-        allureJavaVersion = '2.29.1'
-        aspectjVersion = '1.9.22.1'
-
-        // Автоматическая настройка Allure
-        autoconfigure = true
-        autoconfigureListeners = true
-        aspectjWeaver = true
-
-        frameworks {
-            junit5 {
-                adapterVersion = '2.29.1'
-                enabled = true
-                autoconfigureListeners = true
-            }
-        }
+subprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
     }
 }

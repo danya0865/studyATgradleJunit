@@ -1,6 +1,8 @@
 
 package api;
 
+
+import basicApi.GoodsApi;
 import assertions.ApiAssert;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -20,7 +22,7 @@ public class GoodsPatchTest extends BaseApiTest {
                 200
         );
 
-        // Проверяем, что изменения применились
+        // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РёР·РјРµРЅРµРЅРёСЏ РїСЂРёРјРµРЅРёР»РёСЃСЊ
         var response = GoodsApi.get(id);
 
         ApiAssert.assertStatusCode(response, 200);
@@ -34,7 +36,7 @@ public class GoodsPatchTest extends BaseApiTest {
         createGood(takenName, 10.5);
         long id = createGood(GoodsApi.uniqueName(), 12.5);
 
-        // Имя уже занято другим товаром
+        // РРјСЏ СѓР¶Рµ Р·Р°РЅСЏС‚Рѕ РґСЂСѓРіРёРј С‚РѕРІР°СЂРѕРј
         ApiAssert.assertStatusCode(
                 GoodsApi.patch(id, Map.of("name", takenName)),
                 400
@@ -52,3 +54,4 @@ public class GoodsPatchTest extends BaseApiTest {
         );
     }
 }
+

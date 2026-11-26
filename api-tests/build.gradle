@@ -1,0 +1,90 @@
+plugins {
+    id 'java'
+    id 'io.qameta.allure'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    testImplementation project(':common')
+
+    // JUnit 5
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // API
+    testImplementation 'io.rest-assured:rest-assured:5.4.0'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+    testImplementation 'com.fasterxml.jackson.core:jackson-databind:2.17.0'
+
+    // Allure
+    testImplementation 'io.qameta.allure:allure-junit5:2.29.1'
+    testImplementation 'io.qameta.allure:allure-rest-assured:2.29.1'
+}
+
+tasks.register('testRunOver') {
+    doLast {
+        println 'API test run is over'
+    }
+}
+
+tasks.withType(Test).configureEach {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+
+    useJUnitPlatform()
+
+    testLogging {
+        showStandardStreams = true
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat 'full'
+    }
+
+    outputs.upToDateWhen { false }
+    finalizedBy 'testRunOver'
+}
+
+// Все API-тесты
+tasks.register('apiTest', Test) {
+    group = 'verification'
+    description = 'Runs all API tests'
+
+    useJUnitPlatform {
+        includeTags 'api'
+    }
+}
+
+// Только API smoke-тесты
+tasks.register('apiSmokeTest', Test) {
+    group = 'verification'
+    description = 'Runs API smoke tests'
+
+    useJUnitPlatform {
+        includeTags 'smoke'
+    }
+}
+
+allure {
+    version = '2.29.0'
+
+    adapter {
+        allureJavaVersion = '2.29.1'
+        aspectjVersion = '1.9.22.1'
+        autoconfigure = true
+        autoconfigureListeners = true
+        aspectjWeaver = true
+
+        frameworks {
+            junit5 {
+                adapterVersion = '2.29.1'
+                enabled = true
+                autoconfigureListeners = true
+            }
+        }
+    }
+}

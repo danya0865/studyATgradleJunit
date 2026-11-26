@@ -1,6 +1,8 @@
 
 package api;
 
+
+import basicApi.GoodsApi;
 import assertions.ApiAssert;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -14,7 +16,7 @@ public class GoodsDeleteTest extends BaseApiTest {
 
         ApiAssert.assertStatusCode(GoodsApi.delete(id), 200);
 
-        // Проверяем, что товар действительно удалён
+        // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ С‚РѕРІР°СЂ РґРµР№СЃС‚РІРёС‚РµР»СЊРЅРѕ СѓРґР°Р»С‘РЅ
         ApiAssert.assertStatusCode(GoodsApi.get(id), 404);
     }
 
@@ -26,3 +28,4 @@ public class GoodsDeleteTest extends BaseApiTest {
         );
     }
 }
+

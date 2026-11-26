@@ -1,12 +1,14 @@
 
 package api;
 
+import assertions.ApiAssert;
+import basicApi.GoodsApi;
 import io.qameta.allure.Step;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-import assertions.ApiAssert;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;

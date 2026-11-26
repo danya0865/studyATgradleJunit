@@ -1,13 +1,9 @@
-package api;
-
-import io.restassured.RestAssured;
-import io.restassured.builder.RequestSpecBuilder;
-import io.restassured.http.ContentType;
-import io.restassured.response.Response;
-import io.restassured.specification.RequestSpecification;
+package basicApi;
+import config.RestApiBuilder;
 import config.TestConfig;
 import io.qameta.allure.Step;
-import io.qameta.allure.restassured.AllureRestAssured;
+import io.restassured.response.Response;
+import io.restassured.specification.RequestSpecification;
 
 import java.util.Map;
 import java.util.UUID;
@@ -15,30 +11,20 @@ import java.util.UUID;
 import static io.restassured.RestAssured.given;
 
 /**
- * Обёртка над эндпоинтами учебного API, чтобы не дублировать запросы в тестах.
+ * Обёртка над эндпоинтами учебного API.
  */
 public final class GoodsApi {
 
     public static final String BASE_URI = TestConfig.getApiUrl();
 
-    public static final String USERNAME = TestConfig.getAdminUsername();
-    public static final String PASSWORD = TestConfig.getAdminPassword();
-
-    // ID, которого заведомо нет в системе
     public static final long NON_EXISTENT_ID = 999_999_999L;
 
-    public static final RequestSpecification SPEC = new RequestSpecBuilder()
-            .setBaseUri(BASE_URI)
-            .setContentType(ContentType.JSON)
-            .setAuth(RestAssured.preemptive().basic(USERNAME, PASSWORD))
-            .addFilter(new AllureRestAssured())
-            .build();
+    public static final RequestSpecification SPEC = RestApiBuilder.build();
 
     private GoodsApi() {
     }
 
     @Step("Сгенерировать уникальное имя товара")
-    /** Уникальное имя товара (имена в API должны быть уникальными). */
     public static String uniqueName() {
         return "good-" + UUID.randomUUID();
     }
@@ -57,36 +43,35 @@ public final class GoodsApi {
     }
 
     @Step("Получить ID созданного товара")
-    /** Достаёт ID созданного товара из ответа POST /goods/add (поле data). */
     public static long extractId(Response response) {
         Map<String, Number> data = response.jsonPath().getMap("data");
         return data.values().iterator().next().longValue();
     }
 
-    @Step("Получить товар с ID {id}")
     // GET /goods/{id}
+    @Step("Получить товар с ID {id}")
     public static Response get(long id) {
         return given().spec(SPEC)
                 .when().get("/goods/{id}", id);
     }
 
-    @Step("Удалить товар с ID {id}")
     // DELETE /goods/{id}
+    @Step("Удалить товар с ID {id}")
     public static Response delete(long id) {
         return given().spec(SPEC)
                 .when().delete("/goods/{id}", id);
     }
 
-    @Step("Изменить товар с ID {id}")
     // PATCH /goods/{id}
+    @Step("Изменить товар с ID {id}")
     public static Response patch(long id, Map<String, Object> body) {
         return given().spec(SPEC)
                 .body(body)
                 .when().patch("/goods/{id}", id);
     }
 
-    @Step("Получить список товаров")
     // GET /goods/list
+    @Step("Получить список товаров")
     public static Response list() {
         return given().spec(SPEC)
                 .when().get("/goods/list");

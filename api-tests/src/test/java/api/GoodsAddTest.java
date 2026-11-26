@@ -1,6 +1,8 @@
 
 package api;
 
+
+import basicApi.GoodsApi;
 import assertions.ApiAssert;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -31,3 +33,4 @@ public class GoodsAddTest extends BaseApiTest {
         ApiAssert.assertStatusCode(response, 400);
     }
 }
+

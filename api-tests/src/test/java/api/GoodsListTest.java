@@ -1,12 +1,15 @@
 
 package api;
 
+
+import basicApi.GoodsApi;
 import assertions.ApiAssert;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 @Tag("api")
+@Tag("smoke")
 public class GoodsListTest extends BaseApiTest {
 
     @Test
@@ -28,3 +31,4 @@ public class GoodsListTest extends BaseApiTest {
         ApiAssert.assertListSize(response, "goods", 2);
     }
 }
+

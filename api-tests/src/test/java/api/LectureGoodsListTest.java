@@ -1,6 +1,8 @@
 
 package api;
 
+
+import basicApi.GoodsApi;
 import assertions.ApiAssert;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.builder.RequestSpecBuilder;
@@ -12,12 +14,12 @@ import org.junit.jupiter.api.Test;
 import static io.restassured.RestAssured.given;
 
 /**
- * Лекция, задача 1: четыре теста на GET /goods/list.
+ * Р›РµРєС†РёСЏ, Р·Р°РґР°С‡Р° 1: С‡РµС‚С‹СЂРµ С‚РµСЃС‚Р° РЅР° GET /goods/list.
  */
 @Tag("api")
 public class LectureGoodsListTest extends BaseApiTest {
 
-    // 1. given() / when(): проверяем код ответа и структуру списка
+    // 1. given() / when(): РїСЂРѕРІРµСЂСЏРµРј РєРѕРґ РѕС‚РІРµС‚Р° Рё СЃС‚СЂСѓРєС‚СѓСЂСѓ СЃРїРёСЃРєР°
     @Test
     void listWithGivenWhenThen() {
         Response response = given()
@@ -29,7 +31,7 @@ public class LectureGoodsListTest extends BaseApiTest {
         ApiAssert.assertFieldIsList(response, "goods");
     }
 
-    // 2. RequestSpecification: проверяем код ответа и структуру списка
+    // 2. RequestSpecification: РїСЂРѕРІРµСЂСЏРµРј РєРѕРґ РѕС‚РІРµС‚Р° Рё СЃС‚СЂСѓРєС‚СѓСЂСѓ СЃРїРёСЃРєР°
     @Test
     void listWithRequestSpecification() {
         RequestSpecification spec = new RequestSpecBuilder()
@@ -46,7 +48,7 @@ public class LectureGoodsListTest extends BaseApiTest {
         ApiAssert.assertFieldIsList(response, "goods");
     }
 
-    // 3. Создаём товар и проверяем его наличие в списке
+    // 3. РЎРѕР·РґР°С‘Рј С‚РѕРІР°СЂ Рё РїСЂРѕРІРµСЂСЏРµРј РµРіРѕ РЅР°Р»РёС‡РёРµ РІ СЃРїРёСЃРєРµ
     @Test
     void createdGoodIsInListBuiltInChecks() {
         String name = GoodsApi.uniqueName();
@@ -58,7 +60,7 @@ public class LectureGoodsListTest extends BaseApiTest {
         ApiAssert.assertListContains(response, "goods.name", name);
     }
 
-    // 4. Проверяем список через AssertJ
+    // 4. РџСЂРѕРІРµСЂСЏРµРј СЃРїРёСЃРѕРє С‡РµСЂРµР· AssertJ
     @Test
     void createdGoodIsInListAssertJ() {
         String name = GoodsApi.uniqueName();
@@ -70,3 +72,4 @@ public class LectureGoodsListTest extends BaseApiTest {
         ApiAssert.assertListContains(response, "goods.name", name);
     }
 }
+

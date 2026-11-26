@@ -1,23 +1,23 @@
 
 package tests;
-
+import org.junit.jupiter.api.Tag;
 import assertions.PageAssert;
+import base.BaseUiTest;
 import config.TestConfig;
+import io.qameta.allure.Step;
 import org.junit.jupiter.api.Test;
 import pages.AdminLoginPage;
 import pages.AdminPage;
 import pages.MainPage;
-import io.qameta.allure.Step;
-import selenide.BaseSelenideTest;
 
 import java.util.UUID;
 
-public class PageObjectTest extends BaseSelenideTest {
+@Tag("smoke")
+public class PageObjectTest extends BaseUiTest {
 
     private final MainPage mainPage = new MainPage();
     private final AdminLoginPage adminLoginPage = new AdminLoginPage();
 
-    // Авторизация администратора
     @Step("Авторизоваться под администратором")
     private AdminPage loginAsAdmin() {
         adminLoginPage.openPage();
@@ -34,13 +34,11 @@ public class PageObjectTest extends BaseSelenideTest {
         return adminPage;
     }
 
-    // 2.1. Добавление трёх единиц товара и оформление заказа
     @Test
     public void shouldCreateOrderWithThreeItems() {
         String productName = "PageObject_" + UUID.randomUUID();
         String productPrice = "90";
 
-        // Добавляем товар через админку
         AdminPage adminPage = loginAsAdmin();
         adminPage.addProduct(productName, productPrice);
 
@@ -48,7 +46,6 @@ public class PageObjectTest extends BaseSelenideTest {
                 adminPage.getNotification("Товар успешно добавлен!")
         );
 
-        // Переходим в каталог и добавляем товар три раза
         adminPage.returnToStore();
 
         PageAssert.assertMainPageLoaded(mainPage);
@@ -57,13 +54,11 @@ public class PageObjectTest extends BaseSelenideTest {
         mainPage.addProductToCartByName(productName);
         mainPage.addProductToCartByName(productName);
 
-        // Проверяем корзину
         mainPage.openCart();
 
         PageAssert.assertCartOpened(mainPage);
         PageAssert.assertTotalPrice(mainPage, "270");
 
-        // Оформляем заказ
         mainPage.makeOrder();
 
         PageAssert.assertNotificationVisible(
@@ -71,13 +66,11 @@ public class PageObjectTest extends BaseSelenideTest {
         );
     }
 
-    // 2.2. Добавление разных товаров и проверка общей стоимости
     @Test
     public void shouldCalculateTotalPriceForDifferentProducts() {
         String firstProduct = "First_" + UUID.randomUUID();
         String secondProduct = "Second_" + UUID.randomUUID();
 
-        // Добавляем два товара через админку
         AdminPage adminPage = loginAsAdmin();
 
         adminPage.addProduct(firstProduct, "100");
@@ -92,23 +85,19 @@ public class PageObjectTest extends BaseSelenideTest {
                 adminPage.getNotification("Товар успешно добавлен!")
         );
 
-        // Переходим в каталог
         adminPage.returnToStore();
 
         PageAssert.assertMainPageLoaded(mainPage);
 
-        // Добавляем разные товары в корзину
         mainPage.addProductToCartByName(firstProduct);
         mainPage.addProductToCartByName(secondProduct);
 
-        // Проверяем итоговую сумму
         mainPage.openCart();
 
         PageAssert.assertCartOpened(mainPage);
         PageAssert.assertTotalPrice(mainPage, "250");
     }
 
-    // 2.3. Авторизация и добавление товара через админку
     @Test
     public void shouldAddProductThroughAdmin() {
         String productName = "New_" + UUID.randomUUID();
@@ -123,7 +112,6 @@ public class PageObjectTest extends BaseSelenideTest {
         );
     }
 
-    // 2.4. Авторизация, редактирование товара и проверка изменений
     @Test
     public void shouldEditProductThroughAdmin() {
         String oldName = "Old_" + UUID.randomUUID();
@@ -131,17 +119,14 @@ public class PageObjectTest extends BaseSelenideTest {
 
         AdminPage adminPage = loginAsAdmin();
 
-        // Создаём товар
         adminPage.addProduct(oldName, "120");
 
         PageAssert.assertNotificationVisible(
                 adminPage.getNotification("Товар успешно добавлен!")
         );
 
-        // Получаем ID созданного товара
         String productId = adminPage.getProductIdByName(oldName);
 
-        // Редактируем товар
         adminPage.editProduct(productId, newName, "180");
 
         PageAssert.assertNotificationVisible(
@@ -150,10 +135,8 @@ public class PageObjectTest extends BaseSelenideTest {
                 )
         );
 
-        // Возвращаемся в каталог
         adminPage.returnToStore();
 
-        // Проверяем новое название и цену
         PageAssert.assertProductVisible(mainPage, newName);
         PageAssert.assertProductPrice(mainPage, newName, "180");
     }

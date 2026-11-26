@@ -1,2 +1,5 @@
 rootProject.name = 'studyATgradleJunit'
 
+include 'common'
+include 'api-tests'
+include 'ui-tests'

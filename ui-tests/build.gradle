@@ -1,0 +1,87 @@
+
+plugins {
+    id 'java'
+    id 'io.qameta.allure'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    testImplementation project(':common')
+
+    // JUnit 5
+    testImplementation platform('org.junit:junit-bom:5.10.0')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // UI
+    testImplementation 'org.seleniumhq.selenium:selenium-java:4.27.0'
+    testImplementation 'com.codeborne:selenide:7.7.3'
+    testImplementation 'org.assertj:assertj-core:3.25.3'
+
+    // Allure
+    testImplementation 'io.qameta.allure:allure-junit5:2.29.1'
+    testImplementation 'io.qameta.allure:allure-selenide:2.29.1'
+}
+
+tasks.register('testRunOver') {
+    doLast {
+        println 'UI test run is over'
+    }
+}
+
+tasks.withType(Test).configureEach {
+    testClassesDirs = sourceSets.test.output.classesDirs
+    classpath = sourceSets.test.runtimeClasspath
+
+    useJUnitPlatform()
+
+    testLogging {
+        showStandardStreams = true
+        events 'passed', 'failed', 'skipped'
+        exceptionFormat 'full'
+    }
+
+    outputs.upToDateWhen { false }
+    finalizedBy 'testRunOver'
+}
+
+// Все UI-тесты
+tasks.register('uiTest', Test) {
+    group = 'verification'
+    description = 'Runs all UI tests'
+}
+
+// Только UI smoke-тесты
+tasks.register('uiSmokeTest', Test) {
+    group = 'verification'
+    description = 'Runs UI smoke tests'
+
+    useJUnitPlatform {
+        includeTags 'smoke'
+    }
+}
+
+allure {
+    version = '2.29.0'
+
+    adapter {
+        allureJavaVersion = '2.29.1'
+        aspectjVersion = '1.9.22.1'
+        autoconfigure = true
+        autoconfigureListeners = true
+        aspectjWeaver = true
+
+        frameworks {
+            junit5 {
+                adapterVersion = '2.29.1'
+                enabled = true
+                autoconfigureListeners = true
+            }
+        }
+    }
+}

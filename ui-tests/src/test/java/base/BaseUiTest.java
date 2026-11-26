@@ -1,27 +1,28 @@
 
-package webinar;
+package base;
 
-import api.BaseApiTest;
+import com.codeborne.selenide.Configuration;
 import com.codeborne.selenide.logevents.SelenideLogger;
 import config.TestConfig;
 import io.qameta.allure.selenide.AllureSelenide;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 
-import static com.codeborne.selenide.Configuration.*;
 import static com.codeborne.selenide.Selenide.closeWebDriver;
 
-public class BaseWebinarTest extends BaseApiTest {
+public abstract class BaseUiTest {
+
+    private static final String ALLURE_LISTENER = "AllureSelenide";
 
     @BeforeEach
     public void setUp() {
-        browser = "chrome";
-        baseUrl = TestConfig.getAppUrl();
-        browserSize = "1920x1080";
-        timeout = TestConfig.getTimeoutSeconds() * 1000;
+        Configuration.browser = "chrome";
+        Configuration.baseUrl = TestConfig.getAppUrl();
+        Configuration.browserSize = "1920x1080";
+        Configuration.timeout = TestConfig.getTimeoutSeconds() * 1000;
 
         SelenideLogger.addListener(
-                "AllureSelenide",
+                ALLURE_LISTENER,
                 new AllureSelenide()
                         .screenshots(true)
                         .savePageSource(true)
@@ -31,6 +32,6 @@ public class BaseWebinarTest extends BaseApiTest {
     @AfterEach
     public void tearDown() {
         closeWebDriver();
-        SelenideLogger.removeListener("AllureSelenide");
+        SelenideLogger.removeListener(ALLURE_LISTENER);
     }
 }
